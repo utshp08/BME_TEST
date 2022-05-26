@@ -10,7 +10,6 @@ const AddNewUser = ({ data }) => {
     const [validated, setValidated] = useState()
     const [errors, setErrors] = useState({})
     const [toast, setToast] = useState(false);
-    const [user, setUser] = useState(data)
 
     const formRef = useRef();
     const refFullName = useRef();
@@ -40,15 +39,13 @@ const AddNewUser = ({ data }) => {
             }
 
             try {
-                const response = await fetch('http://localhost:3000/api/user', {
+                const response = await fetch('http://localhost:3001/api/user', {
                     method: "POST",
                     body: JSON.stringify(newUser)
                 })
                 const data = await response.json()
                 setToast({ show: true, body: data.message, success: data.success })
-                if (data.success) {
-                    setUser([...user, newUser])
-                }
+
             } catch (err) {
                 setToast({ show: true, body: "Error! " + err.message, success: false })
             }
@@ -91,7 +88,9 @@ const AddNewUser = ({ data }) => {
             <ToastContainer position="top-center" className="p-3">
                 {toast &&
                     <Toast bg={toast.success ? 'success' : 'danger'} delay={3000} show={toast.show} autohide onClose={() => setToast({ show: false, body: '', success: toast.success })} >
-                        <ToastBody>{toast.body}</ToastBody>
+                        <ToastBody>
+                            <p className="text-light">{toast.body}</p>
+                        </ToastBody>
                     </Toast>
                 }
             </ToastContainer>
@@ -154,25 +153,9 @@ const AddNewUser = ({ data }) => {
 
                 <Button variant="primary" onClick={(e) => handleSubmit(e)}>Submit</Button>
             </Form>
-            <div className="mt-3">
-                <h2>User List: {user.length}</h2>
-                {
-                    user && <p>{JSON.stringify(user)}</p>
-                }
-            </div>
+
         </Container >
     )
-}
-
-export const getStaticProps = async () => {
-    const userResponse = await fetch("http://localhost:3000/api/user")
-    const data = await userResponse.json()
-
-    return {
-        props: {
-            data
-        }
-    }
 }
 
 export default AddNewUser;
