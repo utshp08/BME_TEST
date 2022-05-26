@@ -1,18 +1,14 @@
 import { useRef, useState } from 'react'
-import { Form, FormControl, Container, Button, Toast, ToastBody, ToastContainer } from 'react-bootstrap'
-import Feedback from 'react-bootstrap/Feedback'
+import { Form, Feedback, FormControl, Container, Button, Toast, ToastBody, ToastContainer } from 'react-bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { error } from 'util';
 
 const AddNewUser = ({ data }) => {
-
     const [form, setForm] = useState({})
     const [validated, setValidated] = useState()
     const [errors, setErrors] = useState({})
     const [toast, setToast] = useState(false);
 
     const formRef = useRef();
-    const refFullName = useRef();
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -45,7 +41,6 @@ const AddNewUser = ({ data }) => {
                 })
                 const data = await response.json()
                 setToast({ show: true, body: data.message, success: data.success })
-
             } catch (err) {
                 setToast({ show: true, body: "Error! " + err.message, success: false })
             }
@@ -64,7 +59,6 @@ const AddNewUser = ({ data }) => {
         if (!re_password || re_password === '') newErrors.re_password = 'This field is required!'
         else if (password !== re_password) newErrors.re_password = "Password mismatch!"
         if (!profile || profile === '') newErrors.profile = 'This field is required!'
-        // if (password != re_password) newErrors.mismatch = 'Password not match!'
 
         return newErrors
     }
@@ -79,7 +73,6 @@ const AddNewUser = ({ data }) => {
             ...errors,
             [field]: null
         })
-
     }
 
     return (
@@ -150,10 +143,8 @@ const AddNewUser = ({ data }) => {
                     />
                     <Form.Control.Feedback type="invalid">{errors.profile}</Form.Control.Feedback>
                 </Form.Group>
-
                 <Button variant="primary" onClick={(e) => handleSubmit(e)}>Submit</Button>
             </Form>
-
         </Container >
     )
 }
