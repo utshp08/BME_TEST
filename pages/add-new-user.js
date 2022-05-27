@@ -7,13 +7,14 @@ const AddNewUser = ({ data }) => {
     const [validated, setValidated] = useState()
     const [errors, setErrors] = useState({})
     const [toast, setToast] = useState(false);
+    const [emailValidity, setEmailValidity] = useState({})
 
     const formRef = useRef();
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        const newErrors = findFormErrors()
-
+        const newErrors = await findFormErrors()
+        console.log(newErrors)
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors)
         } else {
@@ -35,7 +36,7 @@ const AddNewUser = ({ data }) => {
             }
 
             try {
-                const response = await fetch('http://localhost:3001/api/user', {
+                const response = await fetch('http://localhost:3000/api/user', {
                     method: "POST",
                     body: JSON.stringify(newUser)
                 })
@@ -47,13 +48,14 @@ const AddNewUser = ({ data }) => {
         }
     }
 
-    const findFormErrors = () => {
+    const findFormErrors = async () => {
         const { fullname, email, password, re_password, profile } = form
         const newErrors = {}
 
         if (!fullname || fullname === '') newErrors.fullname = 'This field is required!'
         if (!email || email === '') newErrors.email = 'This field is required!'
         else if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))) newErrors.email = "Invalid format!"
+        else setEmailValidity(await userEmailAvailable(email))
         if (!password || password === '') newErrors.password = 'This field is required!'
         else if (password !== re_password) newErrors.password = "Password mismatch!"
         if (!re_password || re_password === '') newErrors.re_password = 'This field is required!'
@@ -63,16 +65,34 @@ const AddNewUser = ({ data }) => {
         return newErrors
     }
 
-    const setControl = (field, value) => {
+    const userEmailAvailable = async (email) => {
+        const data = await fetch(`http://localhost:3000/api/user?email=${email}`, {
+            method: "GET"
+        })
+
+        const response = await data.json()
+        return response
+    }
+
+    const setControl = async (field, value) => {
         setForm({
             ...form,
             [field]: value
         })
 
-        if (!!errors[field]) setErrors({
-            ...errors,
-            [field]: null
-        })
+        if (field === 'email') {
+            setEmailValidity({})
+            if (!value || value === '') {
+                setErrors({ ...errors, email: 'This field is required!' })
+            }
+            else if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value))) {
+                setErrors({ ...errors, email: "Invalid format!" })
+            }
+            else {
+                setErrors({ ...errors, email: "" })
+                setEmailValidity(await userEmailAvailable(value))
+            }
+        }
     }
 
     return (
@@ -106,9 +126,11 @@ const AddNewUser = ({ data }) => {
                         required
                         placeholder="Email address"
                         onChange={(e) => setControl('email', e.target.value)}
-                        isInvalid={!!errors.email}
+                        isValid={emailValidity.success}
+                        isInvalid={!!errors.email || Object.keys(emailValidity).length > 0 ? !emailValidity.success : null}
                     />
-                    <Form.Control.Feedback type="invalid">{errors.email}</Form.Control.Feedback>
+                    <Form.Control.Feedback type="valid" className={emailValidity.success ? 'text-sucess' : 'text-danger'}>{emailValidity.success && emailValidity.message}</Form.Control.Feedback>
+                    <Form.Control.Feedback type="invalid">{errors.email || emailValidity.message}</Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group className="mb-3" >
                     <Form.Label>Password</Form.Label>

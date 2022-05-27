@@ -20,7 +20,7 @@ const Homepage = ({ data }) => {
 }
 
 export const getStaticProps = async () => {
-    const userResponse = await fetch("http://localhost:3001/api/user")
+    const userResponse = await fetch("http://localhost:3000/api/user")
     const data = await userResponse.json()
 
     return {
